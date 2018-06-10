@@ -5,14 +5,14 @@ $testName = "foreach";
 $testArray = [];
 
 const ARRAY_LENGTH = 20000;
-const MIN_LOOPS = 3;
-const MAX_LOOPS = 1000;
+const MIN_LOOPS = 10;
+const MAX_LOOPS = 5000;
 
 for ($i = 0; $i < ARRAY_LENGTH; $i++) {
   $testArray[$i] = "test";
 }
 
-echo "\n\n" . "Min LOOPS = " . MIN_LOOPS . "\n";
+echo "***" . "Min LOOPS = " . MIN_LOOPS . "\n";
 
 $start = microtime(true);
 
