@@ -8,7 +8,7 @@
 
 <?php
 
-$testString = '([(([{}]))])';
+$testString = '([(([{}]))]){}([])';
 
 $rawData = str_split($testString);
 
