@@ -1,14 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>ALGORITHMS lesson 1</title>
-</head>
-<body>
-
 <?php
 
-$testString = '([(([{}]))]){}([])';
+$testString = '([(([{}]))]){([])';
 
 $rawData = str_split($testString);
 
@@ -39,7 +31,7 @@ foreach ($rawData as $char) {
 }
 
 
-if ($result) {
+if ($result && $stack->count() == 0) {
   echo 'ALL OK!';
 } else {
   echo 'ERROR!';
