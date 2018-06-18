@@ -98,9 +98,9 @@ class Menu {
 }
 
 
-$mainMenu = new Menu(1);
+// $mainMenu = new Menu(1);
 
-echo $mainMenu->renderMenu();
+// echo $mainMenu->renderMenu();
 
 
 
