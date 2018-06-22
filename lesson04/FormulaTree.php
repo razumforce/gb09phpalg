@@ -19,6 +19,10 @@ class BinaryNode {
 
 class FormulaTree {
 
+    private const OPS_MAP = ['+', '-', '*', '/', '^'];
+    private const VAR_MAP = ['x', 'y', 'z'];
+    private const OPS_WEIGHT = ['+' => 1, '-' => 1, '*' => 2, '/' => 2, '^' => 3];
+    
     protected $root;
 
     public function __construct()
@@ -30,7 +34,89 @@ class FormulaTree {
         return $this->root === null;
     }
 
-    public function insert($item) {
+    public function generate($formula) {
+        $formulaDirect = $this->parseDirect($formula);
+
+        foreach ($formulaDirect as $token) {
+          if (in_array($token, self::OPS_MAP)) {
+            $type = 'ops';
+          } else if (in_array($token, self::VAR_MAP)) {
+            $type = 'var';
+          } else {
+            $type = 'num';
+          }
+          $this->insert(['type' => $type, 'value' => $token]);
+        }
+    }
+
+    protected function parseDirect($formula) {
+        $ops = new SplStack();
+        $oper = new SplStack();
+
+        foreach($formula as $token) {
+            if (!in_array($token, self::OPS_MAP) && $token != '(' && $token != ')') {
+                $oper->push($token);
+            } else if ($token == '(' || $ops->isEmpty() || self::OPS_WEIGHT[$token] > self::OPS_WEIGHT[$ops->top()]) {
+                $ops->push($token);
+            } else if ($token == ')') {
+                while ($ops->top() != '(') {
+                    $operator = $ops->pop();
+                    $rightOperand = $oper->pop();
+                    $leftOperand = $oper->pop();
+                    $operand = [];
+                    $operand[] = $operator;
+                    $operand[] = $leftOperand;
+                    $operand[] = $rightOperand;
+                    $oper->push($operand);
+                }
+                $ops->pop();
+            } else {
+                while (!$ops->isEmpty() && self::OPS_WEIGHT[$token] <= self::OPS_WEIGHT[$ops->top()]) {
+                    $operator = $ops->pop();
+                    $rightOperand = $oper->pop();
+                    $leftOperand = $oper->pop();
+                    $operand = [];
+                    $operand[] = $operator;
+                    $operand[] = $leftOperand;
+                    $operand[] = $rightOperand;
+                    $oper->push($operand);
+                }
+                $ops->push($token);
+            }
+        }
+
+        while (!$ops->isEmpty()) {
+            $operator = $ops->pop();
+            $rightOperand = $oper->pop();
+            $leftOperand = $oper->pop();
+            $operand = [];
+            $operand[] = $operator;
+            $operand[] = $leftOperand;
+            $operand[] = $rightOperand;
+            $oper->push($operand);
+        }
+
+        $result = $oper->top();
+        $oper->pop();
+
+        return $this->flatten($result);
+    }
+
+    private function flatten($array) {
+        if (!is_array($array)) {
+            return array($array);
+        }
+
+        $result = array();
+        foreach ($array as $value) {
+            $result = array_merge($result, $this->flatten($value));
+        }
+
+        return $result;
+    }
+
+
+    protected function insert($item) {
         $node = new BinaryNode($item);
         // echo "***\n";
         // var_dump($node);
