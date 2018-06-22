@@ -38,13 +38,7 @@ class FormulaTree {
         if($this->isEmpty()) {
             $this->root = $node;
         } else {
-            $result = false;
-            while (!$result) {
-                $result = $this->insertNode($node, $this->root);
-                if (!$result) {
-                    echo "WHILE MORE";
-                }
-            };
+            while (!$this->insertNode($node, $this->root)) {};
         }
     }
 
@@ -73,64 +67,56 @@ class FormulaTree {
         return true;
     }
 
-    protected function &findNode($value, &$subtree) {
-        if(is_null($subtree)) {
-            return false;
+
+    public function calculate($var = []) {
+        
+        if ($this->isEmpty()) {
+            throw new \Exception('Tree is empty');
         }
 
-        if($subtree->value > $value) {
-            return $this->findNode($value, $subtree->left);
+        while ($this->root->value['type'] != 'num') {
+            $this->calculateNode($var, $this->root);
         }
-        elseif ($subtree->value < $value) {
-            return $this->findNode($value, $subtree->right);
+
+        return $this->root->value['value'];
+
+    }
+
+    protected function calculateNode($var, &$subtree) {
+        if ($subtree->left->value['type'] != 'ops' && $subtree->right->value['type'] != 'ops') {
+            if ($subtree->value['type'] == 'ops') {
+                $opLeft = ($subtree->left->value['type'] == 'num') ? $subtree->left->value['value'] : $var[$subtree->left->value['value']];
+                $opRight = ($subtree->right->value['type'] == 'num') ? $subtree->right->value['value'] : $var[$subtree->right->value['value']];
+                $subtree->value['type'] = 'num';
+                switch ($subtree->value['value']) {
+                    case '+':
+                        $subtree->value['value'] = $opLeft + $opRight;
+                        break;
+                    case '-':
+                        $subtree->value['value'] = $opLeft - $opRight;
+                        break;
+                    case '*':
+                        $subtree->value['value'] = $opLeft * $opRight;
+                        break;
+                    case '/':
+                        $subtree->value['value'] = $opLeft / $opRight;
+                        break;
+                    case '^':
+                        $subtree->value['value'] = pow ($opLeft, $opRight);
+                        break;
+                    default:
+                        throw new \Exception('Wrong ops');
+                }
+            } else if ($subtree->value['type'] == 'var') {
+                $subtree->value['type'] = 'num';
+                $subtree->value['value'] =$var[$subtree->value['value']];
+            } else {
+
+            } 
+        } else if ($subtree->left->value['type'] == 'ops') {
+            $this->calculateNode($var, $subtree->left);
         } else {
-            return $subtree;
-        }
-
-
-    }
-
-    public function delete($value) {
-
-        if($this->isEmpty()) {
-            throw new \Exception('Tree is emtpy');
-        }
-
-        $node = &$this->findNode($value, $this->root);
-
-        if($node) {
-            $this->deleteNode($node);
-        }
-
-        return $this;
-
-    }
-
-    protected function deleteNode( BinaryNode &$node) {
-        if( is_null ($node->left)  && is_null($node->right)) {
-            $node = null;
-        }
-
-        elseif (is_null($node->left)) {
-            $node = $node->right;
-        }
-
-        elseif (is_null($node->right)) {
-            $node = $node->left;
-        }
-
-        else {
-
-            if(is_null($node->right->left)) {
-                $node->right->left = $node->left;
-                $node = $node->right;
-            }
-
-            else {
-                $node->value = $node->right->left->value;
-                $this->deleteNode($node->right->left);
-            }
-
+            $this->calculateNode($var, $subtree->right);
         }
 
     }
